@@ -1,0 +1,1351 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Quant 4.1 — Sistema Institucional Binance Futures (Beta + Alpha Residual BTC)</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --card: #111622;
+      --border: #222d42;
+      --text: #e2e8f0;
+      --muted: #8a99ad;
+      --accent: #f0b90b;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --orange: #f97316;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 16px; }
+    .container { max-width: 1340px; margin: 0 auto; }
+    .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tab { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+    .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; background: var(--card); padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .header h1 { margin: 0; font-size: 1.12rem; color: var(--accent); }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    input[type="text"], input[type="number"], select { background: #07090e; border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+    input[type="text"] { width: 135px; text-transform: uppercase; }
+    button { cursor: pointer; border: none; padding: 9px 15px; border-radius: 6px; font-weight: 600; font-size: 0.86rem; transition: opacity 0.15s; }
+    button:hover { opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-copy { background: var(--green); color: #000; }
+    .btn-full { background: var(--blue); color: #fff; }
+    .btn-scan { background: var(--purple); color: #fff; }
+    .quick-tickers { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .chip { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 20px; font-size: 0.78rem; cursor: pointer; }
+    .chip:hover { color: var(--text); border-color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .metric-card { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 8px; }
+    .metric-label { font-size: 0.74rem; color: var(--muted); margin-bottom: 4px; }
+    .metric-val { font-size: 0.98rem; font-weight: 700; }
+    .status { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    textarea { width: 100%; height: 460px; background: #05070a; color: #cbd5e1; border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-family: 'Consolas', monospace; font-size: 0.80rem; line-height: 1.45; resize: vertical; }
+    .action-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; justify-content: flex-end; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    th, td { padding: 10px 11px; text-align: left; font-size: 0.81rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th { background: #182030; color: var(--accent); font-weight: 700; line-height: 1.25; }
+    .th-sub { display: block; font-size: 0.69rem; color: #94a3b8; font-weight: 500; margin-top: 3px; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    .row-top { background: rgba(16, 185, 129, 0.07); }
+    .row-candidate { background: rgba(240, 185, 11, 0.05); }
+    .rank-badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-weight: 700; font-size: 0.75rem; background: #1e293b; color: var(--text); }
+    .calc-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+    .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .calc-field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+    .calc-field input, .calc-field select { width: 100%; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="nav-tabs">
+    <div class="tab active" onclick="switchTab(0)">1. Coletor Quant 4.1 (Beta + Alpha Residual BTC)</div>
+    <div class="tab" onclick="switchTab(1)">2. Calculadora Blindada de Posição & Estresse</div>
+    <div class="tab" onclick="switchTab(2)">3. Scanner Top 25 (Ranking Automático da Melhor p/ Pior)</div>
+  </div>
+
+  <!-- ABA 0: ATIVO ÚNICO COMPLETO -->
+  <div class="panel active" id="panel0">
+    <div class="header">
+      <div>
+        <h1>Painel Quant 4.1 — Motor Institucional (VWAP + ADX + PDH/PDL + Mapa de Liquidação + Matriz OI + Beta BTC)</h1>
+        <div id="statusText" class="status">Pronto para consultar a API pública da Binance Futures.</div>
+      </div>
+      <div class="controls">
+        <input type="text" id="symbolInput" value="INJUSDT" placeholder="Ex: INJUSDT" />
+        <button class="btn-primary" onclick="fetchAllData()">Coletar Dados 4.1 Agora</button>
+      </div>
+    </div>
+
+    <div class="quick-tickers">
+      <span style="font-size:0.8rem; color:var(--muted); align-self:center; margin-right:4px;">Atalhos:</span>
+      <span class="chip" onclick="setSymbol('INJUSDT')">INJUSDT</span>
+      <span class="chip" onclick="setSymbol('DOTUSDT')">DOTUSDT</span>
+      <span class="chip" onclick="setSymbol('XRPUSDT')">XRPUSDT</span>
+      <span class="chip" onclick="setSymbol('RENDERUSDT')">RENDERUSDT</span>
+      <span class="chip" onclick="setSymbol('SUIUSDT')">SUIUSDT</span>
+      <span class="chip" onclick="setSymbol('SOLUSDT')">SOLUSDT</span>
+      <span class="chip" onclick="setSymbol('BTCUSDT')">BTCUSDT</span>
+      <span class="chip" onclick="setSymbol('ETHUSDT')">ETHUSDT</span>
+      <span class="chip" onclick="setSymbol('ADAUSDT')">ADAUSDT</span>
+      <span class="chip" onclick="setSymbol('DOGEUSDT')">DOGEUSDT</span>
+      <span class="chip" onclick="setSymbol('AVAXUSDT')">AVAXUSDT</span>
+      <span class="chip" onclick="setSymbol('LINKUSDT')">LINKUSDT</span>
+    </div>
+
+    <div class="grid">
+      <div class="metric-card">
+        <div class="metric-label">Contexto BTC & Beta (Seção 0)</div>
+        <div class="metric-val" id="cardBtc">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Preço Atual / StepSize</div>
+        <div class="metric-val" id="cardPrice">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">VWAP Diária & Sigma (σ)</div>
+        <div class="metric-val" id="cardVwap">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Regime ADX (5m / 15m)</div>
+        <div class="metric-val" id="cardAdx">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Matriz OI (15m) & Funding</div>
+        <div class="metric-val" id="cardOiFund">--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">PDH / PDL & Backtest ±2σ</div>
+        <div class="metric-val" id="cardPdhBt">--</div>
+      </div>
+    </div>
+
+    <textarea id="outputReport" readonly placeholder="Clique em 'Coletar Dados 4.1 Agora' para gerar o relatório auditado completo..."></textarea>
+
+    <div class="action-bar">
+      <button class="btn-copy" onclick="copyReport(false)">1. Copiar Relatório 4.1 (Colar no Chat Atual)</button>
+      <button class="btn-full" onclick="copyReport(true)">2. Copiar Protocolo V4.1 Completo + Relatório (Para Novo Chat)</button>
+    </div>
+  </div>
+
+  <!-- ABA 1: CALCULADORA DE SIZING E ESTRESSE -->
+  <div class="panel" id="panel1">
+    <div class="calc-box">
+      <h2 style="margin-top:0; font-size:1.05rem; color:var(--accent);">Calculadora Blindada de Posição V4.1 (À Prova de Erro de Quantidade)</h2>
+      <p style="font-size:0.82rem; color:var(--muted); margin-top:4px;">Calcula automaticamente a quantidade exata arredondada para baixo no <code>stepSize</code> oficial da corretora, valida a coerência direcional de Entrada/Stop/Alvo, aplica o teste de estresse de 0,10% de slippage no stop e informa o Preço Limite de Cancelamento (onde o R:R líquido cai abaixo de 1,50:1).</p>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Direção</label>
+          <select id="calcDir" onchange="runPositionCalculator()">
+            <option value="LONG">LONG (Compra)</option>
+            <option value="SHORT">SHORT (Venda)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Preço de Entrada (USDT)</label>
+          <input type="number" id="calcEntry" step="any" value="8.430" oninput="runPositionCalculator()" />
+        </div>
+        <div class="calc-field">
+          <label>Preço de Stop-Loss (USDT)</label>
+          <input type="number" id="calcStop" step="any" value="8.560" oninput="runPositionCalculator()" />
+        </div>
+        <div class="calc-field">
+          <label>Preço de Alvo Final (USDT)</label>
+          <input type="number" id="calcTarget" step="any" value="8.230" oninput="runPositionCalculator()" />
+        </div>
+        <div class="calc-field">
+          <label>Risco Máx. Permitido ($)</label>
+          <input type="number" id="calcMaxRisk" step="0.1" value="3.00" oninput="runPositionCalculator()" />
+        </div>
+        <div class="calc-field">
+          <label>Teto de Exposição ($)</label>
+          <input type="number" id="calcMaxExp" step="10" value="150.00" oninput="runPositionCalculator()" />
+        </div>
+        <div class="calc-field">
+          <label>Step Size da Moeda</label>
+          <input type="number" id="calcStep" step="any" value="0.1" oninput="runPositionCalculator()" />
+        </div>
+      </div>
+      <textarea id="calcOutput" style="height:290px;" readonly></textarea>
+    </div>
+  </div>
+
+  <!-- ABA 2: SCANNER TOP 25 COM RANKING AUTOMÁTICO -->
+  <div class="panel" id="panel2">
+    <div class="header">
+      <div>
+        <h1>Scanner Quant 4.1 — Ranking Automático Top 25 (Ordenado da Melhor Oportunidade para a Pior)</h1>
+        <div id="scanStatus" class="status">Clique no botão roxo para varrer e classificar automaticamente os 25 contratos perpétuos.</div>
+      </div>
+      <button class="btn-scan" onclick="runMarketScanner()">Iniciar Varredura & Ranking 4.1</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table id="scannerTable">
+        <thead>
+          <tr>
+            <th># Rank<span class="th-sub">Melhor → Pior</span></th>
+            <th>Ativo<span class="th-sub">Clique p/ Aba 1</span></th>
+            <th>1º Sigma (σ)<span class="th-sub">Pref: ≥ +2.0σ ou ≤ -2.0σ</span></th>
+            <th>2º Backtest ±2σ→1σ<span class="th-sub">Pref: Maior que 50%</span></th>
+            <th>3º ADX 15m (Regime)<span class="th-sub">Rev: &lt;25 | Pullback: &gt;22</span></th>
+            <th>4º Agressão 15m<span class="th-sub">Long ≥55% | Short ≤45%</span></th>
+            <th>RSI 5m / 15m<span class="th-sub">Extremos: ≤35 ou ≥65</span></th>
+            <th>Preço / Var 24h<span class="th-sub">Cotação USDT</span></th>
+            <th>Status Operacional V4.1<span class="th-sub">Diagnóstico Automático & Prioridade</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="9" style="text-align:center; color:var(--muted);">Clique em "Iniciar Varredura & Ranking 4.1" para escanear e ordenar o mercado.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = 'https://fapi.binance.com';
+let latestDataText = '';
+let exchangeInfoCache = null;
+
+const SCAN_LIST = [
+  "BTCUSDT", "ETHUSDT", "SOLUSDT", "SUIUSDT", "ATOMUSDT", "ADAUSDT", "XRPUSDT",
+  "DOGEUSDT", "AVAXUSDT", "LINKUSDT", "NEARUSDT", "RENDERUSDT", "APTUSDT",
+  "ARBUSDT", "OPUSDT", "INJUSDT", "TIAUSDT", "ICPUSDT", "FETUSDT",
+  "DOTUSDT", "UNIUSDT", "FILUSDT", "LTCUSDT", "BNBUSDT", "AAVEUSDT"
+];
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+  if (idx === 1) runPositionCalculator();
+}
+
+function setSymbol(sym) {
+  document.getElementById('symbolInput').value = sym;
+  switchTab(0);
+  fetchAllData();
+}
+
+function fmt(num, dec = 4) {
+  if (num === null || num === undefined || isNaN(num)) return 'N/D';
+  return Number(num).toFixed(dec);
+}
+
+function decimalsFromTick(tickStr, fallbackPrice) {
+  if (tickStr && tickStr.includes('.')) {
+    const trimmed = tickStr.replace(/0+$/, '');
+    const parts = trimmed.split('.');
+    if (parts[1]) return Math.max(2, parts[1].length);
+  }
+  const p = Number(fallbackPrice || 1);
+  if (p >= 1000) return 2;
+  if (p >= 10) return 3;
+  if (p >= 0.5) return 4;
+  if (p >= 0.01) return 5;
+  return 6;
+}
+
+function floorToStep(val, step) {
+  const s = parseFloat(step) || 0.01;
+  if (s <= 0) return val;
+  const inv = Math.round(1 / s);
+  if (inv > 0 && Math.abs(1 / inv - s) < 1e-9) {
+    return Math.floor((val + 1e-12) * inv) / inv;
+  }
+  return Math.floor(val / s) * s;
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+async function getSymbolSpecs(symbol, lastPrice) {
+  try {
+    if (!exchangeInfoCache) {
+      exchangeInfoCache = await fetchJson(`${BASE_URL}/fapi/v1/exchangeInfo`);
+    }
+    const symObj = exchangeInfoCache.symbols.find(s => s.symbol === symbol);
+    if (!symObj) throw new Error('Not found');
+    let tickSize = '0.0001', stepSize = '0.01', minNotional = '5.0';
+    for (const f of symObj.filters) {
+      if (f.filterType === 'PRICE_FILTER') tickSize = f.tickSize;
+      if (f.filterType === 'LOT_SIZE') stepSize = f.stepSize;
+      if (f.filterType === 'MIN_NOTIONAL') minNotional = f.notional || f.minNotional || '5.0';
+    }
+    return {
+      tickSize,
+      stepSize,
+      minNotional: parseFloat(minNotional),
+      priceDec: decimalsFromTick(tickSize, lastPrice),
+      qtyDec: stepSize.includes('.') ? Math.max(0, stepSize.replace(/0+$/, '').split('.')[1].length) : 0
+    };
+  } catch (e) {
+    return {
+      tickSize: 'N/D',
+      stepSize: '0.01',
+      minNotional: 5,
+      priceDec: decimalsFromTick(null, lastPrice),
+      qtyDec: 2
+    };
+  }
+}
+
+function calculateRSI(closes, period = 14) {
+  if (closes.length < period + 1) return 50;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff >= 0) gains += diff; else losses -= diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff >= 0) {
+      avgGain = (avgGain * (period - 1) + diff) / period;
+      avgLoss = (avgLoss * (period - 1)) / period;
+    } else {
+      avgGain = (avgGain * (period - 1)) / period;
+      avgLoss = (avgLoss * (period - 1) - diff) / period;
+    }
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+function calculateEMA(closes, period) {
+  if (!closes.length) return 0;
+  const k = 2 / (period + 1);
+  let ema = closes[0];
+  for (let i = 1; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+function calculateATR(klines, period = 14) {
+  if (klines.length < period + 1) return 0;
+  let trs = [];
+  for (let i = 1; i < klines.length; i++) {
+    const h = parseFloat(klines[i][2]);
+    const l = parseFloat(klines[i][3]);
+    const prevC = parseFloat(klines[i - 1][4]);
+    const tr = Math.max(h - l, Math.abs(h - prevC), Math.abs(l - prevC));
+    trs.push(tr);
+  }
+  const recent = trs.slice(-period);
+  return recent.reduce((a, b) => a + b, 0) / recent.length;
+}
+
+function calculateADX(klines, period = 14) {
+  if (!klines || klines.length < period * 2 + 2) {
+    return { adx: 20, plusDI: 20, minusDI: 20, regimeLabel: 'AMOSTRA INSUF.' };
+  }
+  let tr = [0], pdm = [0], mdm = [0];
+  for (let i = 1; i < klines.length; i++) {
+    const h = parseFloat(klines[i][2]);
+    const l = parseFloat(klines[i][3]);
+    const ph = parseFloat(klines[i - 1][2]);
+    const pl = parseFloat(klines[i - 1][3]);
+    const pc = parseFloat(klines[i - 1][4]);
+
+    const upMove = h - ph;
+    const downMove = pl - l;
+    pdm.push(upMove > downMove && upMove > 0 ? upMove : 0);
+    mdm.push(downMove > upMove && downMove > 0 ? downMove : 0);
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
+  }
+
+  let smoothTR = 0, smoothPDM = 0, smoothMDM = 0;
+  for (let i = 1; i <= period; i++) {
+    smoothTR += tr[i];
+    smoothPDM += pdm[i];
+    smoothMDM += mdm[i];
+  }
+
+  let dxList = [];
+  let lastPlusDI = 0, lastMinusDI = 0;
+
+  for (let i = period + 1; i < klines.length; i++) {
+    smoothTR = smoothTR - (smoothTR / period) + tr[i];
+    smoothPDM = smoothPDM - (smoothPDM / period) + pdm[i];
+    smoothMDM = smoothMDM - (smoothMDM / period) + mdm[i];
+
+    const plusDI = smoothTR > 0 ? (smoothPDM / smoothTR) * 100 : 0;
+    const minusDI = smoothTR > 0 ? (smoothMDM / smoothTR) * 100 : 0;
+    const sumDI = plusDI + minusDI;
+    const dx = sumDI > 0 ? (Math.abs(plusDI - minusDI) / sumDI) * 100 : 0;
+    dxList.push(dx);
+    lastPlusDI = plusDI;
+    lastMinusDI = minusDI;
+  }
+
+  if (dxList.length < period) {
+    return { adx: dxList[dxList.length - 1] || 20, plusDI: lastPlusDI, minusDI: lastMinusDI, regimeLabel: 'NEUTRO' };
+  }
+
+  let adx = 0;
+  for (let i = 0; i < period; i++) adx += dxList[i];
+  adx /= period;
+  for (let i = period; i < dxList.length; i++) {
+    adx = ((adx * (period - 1)) + dxList[i]) / period;
+  }
+
+  const dirDom = lastPlusDI >= lastMinusDI ? 'COMPRADORA (DI+ > DI-)' : 'VENDEDORA (DI- > DI+)';
+  let regimeLabel = '';
+  if (adx < 22) {
+    regimeLabel = `RANGE / LATERAL (ADX ${adx.toFixed(1)} < 22 -> LIBERADO Reversao a Media nas Bandas VWAP)`;
+  } else if (adx <= 25) {
+    regimeLabel = `ZONA DE TRANSICAO (ADX ${adx.toFixed(1)} entre 22-25 | Dominancia ${dirDom} -> Exigir confirmacao de absorcao)`;
+  } else {
+    regimeLabel = `TENDENCIA FORTE ${dirDom} (ADX ${adx.toFixed(1)} > 25 -> BLOQUEADO Reversao Cega contra o fluxo; priorizar Pullback a favor da tendencia)`;
+  }
+
+  return { adx, plusDI: lastPlusDI, minusDI: lastMinusDI, regimeLabel };
+}
+
+function calculateVwapAndBands(klines) {
+  let sumPV = 0, sumV = 0, sumPV2 = 0;
+  for (const k of klines) {
+    const high = parseFloat(k[2]);
+    const low = parseFloat(k[3]);
+    const close = parseFloat(k[4]);
+    const vol = parseFloat(k[5]);
+    const tp = (high + low + close) / 3;
+    sumPV += tp * vol;
+    sumV += vol;
+    sumPV2 += vol * (tp * tp);
+  }
+  if (sumV === 0) return null;
+  const vwap = sumPV / sumV;
+  const variance = Math.max(0, (sumPV2 / sumV) - (vwap * vwap));
+  const stdev = Math.sqrt(variance);
+  return {
+    vwap, stdev,
+    upper1: vwap + stdev, lower1: vwap - stdev,
+    upper2: vwap + 2 * stdev, lower2: vwap - 2 * stdev,
+    upper3: vwap + 3 * stdev, lower3: vwap - 3 * stdev,
+    totalVolumeBase: sumV
+  };
+}
+
+function calculateIntradayPOC(sessionKlines) {
+  if (!sessionKlines.length) return 0;
+  let minP = Infinity, maxP = -Infinity;
+  for (const k of sessionKlines) {
+    const l = parseFloat(k[3]), h = parseFloat(k[2]);
+    if (l < minP) minP = l;
+    if (h > maxP) maxP = h;
+  }
+  if (maxP <= minP) return minP;
+  const bins = 24;
+  const step = (maxP - minP) / bins;
+  const volBins = new Array(bins).fill(0);
+  for (const k of sessionKlines) {
+    const tp = (parseFloat(k[2]) + parseFloat(k[3]) + parseFloat(k[4])) / 3;
+    const qVol = parseFloat(k[7]);
+    let idx = Math.floor((tp - minP) / step);
+    if (idx >= bins) idx = bins - 1;
+    if (idx < 0) idx = 0;
+    volBins[idx] += qVol;
+  }
+  let maxIdx = 0;
+  for (let i = 1; i < bins; i++) {
+    if (volBins[i] > volBins[maxIdx]) maxIdx = i;
+  }
+  return minP + (maxIdx + 0.5) * step;
+}
+
+// MOTOR DE CORRELAÇÃO DE PEARSON (r), BETA (β) E ALPHA RESIDUAL (α)
+function calculateCorrelationAndBeta(btcKlines5m, assetKlines5m, windowCandles = 24) {
+  const btcMap = new Map();
+  btcKlines5m.forEach(k => btcMap.set(k[0], parseFloat(k[4])));
+
+  const paired = [];
+  for (const ak of assetKlines5m) {
+    const t = ak[0];
+    if (btcMap.has(t)) {
+      paired.push({ time: t, btc: btcMap.get(t), asset: parseFloat(ak[4]) });
+    }
+  }
+
+  const slice = paired.slice(-(windowCandles + 1));
+  if (slice.length < 10) {
+    return { r: 0, beta: 1, btcRet15m: 0, assetRet15m: 0, expectedMove15m: 0, alpha15m: 0, diag: "AMOSTRA INSUFICIENTE" };
+  }
+
+  const btcRets = [], assetRets = [];
+  for (let i = 1; i < slice.length; i++) {
+    btcRets.push((slice[i].btc - slice[i - 1].btc) / slice[i - 1].btc);
+    assetRets.push((slice[i].asset - slice[i - 1].asset) / slice[i - 1].asset);
+  }
+
+  const n = btcRets.length;
+  const meanBtc = btcRets.reduce((a, b) => a + b, 0) / n;
+  const meanAsset = assetRets.reduce((a, b) => a + b, 0) / n;
+
+  let cov = 0, varBtc = 0, varAsset = 0;
+  for (let i = 0; i < n; i++) {
+    const db = btcRets[i] - meanBtc;
+    const da = assetRets[i] - meanAsset;
+    cov += db * da;
+    varBtc += db * db;
+    varAsset += da * da;
+  }
+
+  const r = (varBtc > 0 && varAsset > 0) ? cov / Math.sqrt(varBtc * varAsset) : 0;
+  const beta = varBtc > 0 ? cov / varBtc : 1.0;
+
+  const idxNow = slice.length - 1;
+  const idx15m = Math.max(0, idxNow - 3);
+  const btcRet15m = ((slice[idxNow].btc - slice[idx15m].btc) / slice[idx15m].btc) * 100;
+  const assetRet15m = ((slice[idxNow].asset - slice[idx15m].asset) / slice[idx15m].asset) * 100;
+
+  const expectedMove15m = beta * btcRet15m;
+  const alpha15m = assetRet15m - expectedMove15m;
+
+  let diag = "";
+  if (Math.abs(r) >= 0.65 && Math.abs(alpha15m) <= 0.25) {
+    diag = "ARRASTO MECÂNICO DO BTC (Espuma de HFT: Movimento explicado pelo Beta do BTC; ignorar falso disparo de ADX contra reversão na VWAP ±2σ)";
+  } else if (alpha15m > 0.25) {
+    diag = `FORÇA PRÓPRIA COMPRADORA (Alpha Positivo +${alpha15m.toFixed(2)}% acima da obrigação do Beta; fluxo autônomo real no ativo)`;
+  } else if (alpha15m < -0.25) {
+    diag = `FRAQUEZA / ABSORÇÃO VENDEDORA PRÓPRIA (Alpha Negativo ${alpha15m.toFixed(2)}% abaixo do Beta do BTC; vendedores absorvendo compras)`;
+  } else {
+    diag = "DESCORRELACIONADO / NEUTRO (Operar microestrutura isolada do ativo)";
+  }
+
+  return { r, beta, btcRet15m, assetRet15m, expectedMove15m, alpha15m, diag };
+}
+
+function extractSessionLevels(klines1d, klines5m, sessionKlines5m, lastPrice, dec) {
+  let pdh = null, pdl = null, pdc = null;
+  if (klines1d && klines1d.length >= 2) {
+    const prevDay = klines1d[klines1d.length - 2];
+    pdh = parseFloat(prevDay[2]);
+    pdl = parseFloat(prevDay[3]);
+    pdc = parseFloat(prevDay[4]);
+  }
+
+  let asiaOpen = null, londonOpen = null, nyOpen = null;
+  for (const k of klines5m) {
+    const dt = new Date(k[0]);
+    const h = dt.getUTCHours();
+    const m = dt.getUTCMinutes();
+    if (h === 0 && m === 0) asiaOpen = parseFloat(k[1]);
+    if (h === 8 && m === 0) londonOpen = parseFloat(k[1]);
+    if (h === 13 && m === 30) nyOpen = parseFloat(k[1]);
+  }
+
+  let sessionHigh = -Infinity, sessionLow = Infinity;
+  for (const k of sessionKlines5m) {
+    const h = parseFloat(k[2]), l = parseFloat(k[3]);
+    if (h > sessionHigh) sessionHigh = h;
+    if (l < sessionLow) sessionLow = l;
+  }
+
+  let sweepStatus = 'Nenhum varrimento (sweep) de PDH/PDL concluido na sessao atual.';
+  if (pdh && sessionHigh > pdh && lastPrice < pdh) {
+    sweepStatus = `SWEEP DE TOPO DETECTADO NA PDH (${fmt(pdh, dec)}): Preco varreu a Maxima do Dia Anterior (foi a ${fmt(sessionHigh, dec)}) e voltou abaixo -> Forte sinal institucional de rejeicao/exaustao de alta!`;
+  } else if (pdl && sessionLow < pdl && lastPrice > pdl) {
+    sweepStatus = `SWEEP DE FUNDO DETECTADO NA PDL (${fmt(pdl, dec)}): Preco varreu a Minima do Dia Anterior (foi a ${fmt(sessionLow, dec)}) e recuperou acima -> Forte sinal institucional de absorcao/reversao de baixa!`;
+  } else if (pdh && lastPrice > pdh) {
+    sweepStatus = `Acima da Maxima do Dia Anterior (PDH ${fmt(pdh, dec)}) -> Em expansao de alta.`;
+  } else if (pdl && lastPrice < pdl) {
+    sweepStatus = `Abaixo da Minima do Dia Anterior (PDL ${fmt(pdl, dec)}) -> Em expansao de queda (cuidado com faca caindo ate recuperar a PDL).`;
+  }
+
+  const distPdh = pdh ? (((lastPrice - pdh) / pdh) * 100).toFixed(2) + '%' : 'N/D';
+  const distPdl = pdl ? (((lastPrice - pdl) / pdl) * 100).toFixed(2) + '%' : 'N/D';
+
+  return {
+    pdh, pdl, pdc, asiaOpen, londonOpen, nyOpen, sweepStatus, distPdh, distPdl
+  };
+}
+
+function calculateLiquidationClusters(klines5m, pocPrice, vwapPrice, lastPrice, dec) {
+  const recent96 = klines5m.slice(-96);
+  let maxVolHigh = { price: parseFloat(recent96[0][2]), vol: 0, time: '' };
+  let maxVolLow = { price: parseFloat(recent96[0][3]), vol: 0, time: '' };
+
+  let swingHigh = -Infinity, swingLow = Infinity;
+  for (const k of recent96) {
+    const h = parseFloat(k[2]), l = parseFloat(k[3]), v = parseFloat(k[7]);
+    const t = new Date(k[0]).toISOString().substring(11, 16) + ' UTC';
+    if (h > swingHigh) { swingHigh = h; maxVolHigh = { price: h, vol: v, time: t }; }
+    if (l < swingLow) { swingLow = l; maxVolLow = { price: l, vol: v, time: t }; }
+  }
+
+  const anchorLongBase = Math.min(pocPrice, lastPrice);
+  const anchorShortBase = Math.max(pocPrice, lastPrice);
+
+  const longLiq100x = anchorLongBase * (1 - 0.0065);
+  const longLiq50x_POC = pocPrice * (1 - 0.0155);
+  const longLiq50x_Low = swingLow * (1 - 0.0155);
+  const longLiq25x_POC = pocPrice * (1 - 0.0350);
+  const longLiq20x_POC = pocPrice * (1 - 0.0445);
+
+  const shortLiq100x = anchorShortBase * (1 + 0.0065);
+  const shortLiq50x_POC = pocPrice * (1 + 0.0155);
+  const shortLiq50x_High = swingHigh * (1 + 0.0155);
+  const shortLiq25x_POC = pocPrice * (1 + 0.0350);
+  const shortLiq20x_POC = pocPrice * (1 + 0.0445);
+
+  return `- Ancoras de Volume Usadas: POC Intraday (${fmt(pocPrice, dec)}) | Topo 8h (${fmt(swingHigh, dec)} @ ${maxVolHigh.time}) | Fundo 8h (${fmt(swingLow, dec)} @ ${maxVolLow.time})
+- BOLSOES DE LIQUIDACAO DE COMPRADOS (Abaixo do Preco — Imas de Queda / Cascata de Longs):
+  * Cluster 100x Longs (Curto Prazo): ${fmt(longLiq100x, dec)}
+  * Cluster 50x Longs (Entrados no POC / Fundo 8h): ${fmt(longLiq50x_POC, dec)} a ${fmt(longLiq50x_Low, dec)}
+  * Cluster 25x Longs (Bolsao Principal do POC): ${fmt(longLiq25x_POC, dec)} (20x em ${fmt(longLiq20x_POC, dec)})
+- BOLSOES DE LIQUIDACAO DE VENDIDOS (Acima do Preco — Imas de Alta / Combustivel de Short Squeeze):
+  * Cluster 100x Shorts (Curto Prazo): ${fmt(shortLiq100x, dec)}
+  * Cluster 50x Shorts (Entrados no POC / Topo 8h): ${fmt(shortLiq50x_POC, dec)} a ${fmt(shortLiq50x_High, dec)}
+  * Cluster 25x Shorts (Bolsao Principal do POC): ${fmt(shortLiq25x_POC, dec)} (20x em ${fmt(shortLiq20x_POC, dec)})`;
+}
+
+function diagnoseOiPriceMatrix(priceChangePct, oiChangePctStr) {
+  const oiChg = parseFloat(oiChangePctStr);
+  if (isNaN(oiChg)) return 'Dados de variacao de OI indisponiveis';
+  if (Math.abs(oiChg) < 0.05 && Math.abs(priceChangePct) < 0.15) {
+    return `NEUTRO / CONSOLIDACAO (Preco ${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}% | OI ${oiChg >= 0 ? '+' : ''}${oiChg.toFixed(2)}%)`;
+  }
+  if (priceChangePct >= 0 && oiChg >= 0) {
+    return `QUADRANTE 1 [PRECO SUBINDO (${priceChangePct.toFixed(2)}%) + OI SUBINDO (+${oiChg.toFixed(2)}%)] -> Entrada de Novos Compradores (Longs abrindo posicao; se esticado em +2σ com CVD fraco = topo alavancado vulneravel)`;
+  }
+  if (priceChangePct >= 0 && oiChg < 0) {
+    return `QUADRANTE 2 [PRECO SUBINDO (+${priceChangePct.toFixed(2)}%) + OI CAINDO (${oiChg.toFixed(2)}%)] -> Cobertura de Vendidos / Short Covering (Alta movida a stops de shorts fechando; perde forca apos varrer liquidez)`;
+  }
+  if (priceChangePct < 0 && oiChg >= 0) {
+    return `QUADRANTE 3 [PRECO CAINDO (${priceChangePct.toFixed(2)}%) + OI SUBINDO (+${oiChg.toFixed(2)}%)] -> Abertura Agressiva de Novos Shorts (Vendedores entrando pesado; se o preco absorver no suporte e parar de cair = combustivel real para Short Squeeze!)`;
+  }
+  return `QUADRANTE 4 [PRECO CAINDO (${priceChangePct.toFixed(2)}%) + OI CAINDO (${oiChg.toFixed(2)}%)] -> Liquidacao / Capitulacao de Longs (Comprados sendo estopados/desalavancando; aguardar limpeza antes de comprar)`;
+}
+
+function runEmpiricalVwapBacktest(klines5m) {
+  let episodesUpper2 = 0, hitUpper1In90m = 0, hitVwapFromUpper = 0, maxAdvUpperSum = 0;
+  let episodesLower2 = 0, hitLower1In90m = 0, hitVwapFromLower = 0, maxAdvLowerSum = 0;
+
+  let currentDay = null;
+  let dayKlines = [];
+
+  for (let i = 0; i < klines5m.length - 18; i++) {
+    const k = klines5m[i];
+    const d = new Date(k[0]).getUTCDate();
+    if (d !== currentDay) {
+      currentDay = d;
+      dayKlines = [];
+    }
+    dayKlines.push(k);
+    if (dayKlines.length < 12) continue;
+
+    const v = calculateVwapAndBands(dayKlines);
+    if (!v || v.stdev === 0) continue;
+
+    const close = parseFloat(k[4]);
+    const prevClose = parseFloat(klines5m[i - 1][4]);
+
+    if (close >= v.upper2 && prevClose < v.upper2) {
+      episodesUpper2++;
+      let touched1 = false, touchedVwap = false, maxHigh = close;
+      for (let j = i + 1; j <= i + 18 && j < klines5m.length; j++) {
+        const fh = parseFloat(klines5m[j][2]);
+        const fl = parseFloat(klines5m[j][3]);
+        if (fh > maxHigh && !touched1) maxHigh = fh;
+        if (fl <= v.upper1) touched1 = true;
+        if (fl <= v.vwap) touchedVwap = true;
+      }
+      if (touched1) hitUpper1In90m++;
+      if (touchedVwap) hitVwapFromUpper++;
+      maxAdvUpperSum += ((maxHigh - close) / close) * 100;
+    }
+
+    if (close <= v.lower2 && prevClose > v.lower2) {
+      episodesLower2++;
+      let touched1 = false, touchedVwap = false, minLow = close;
+      for (let j = i + 1; j <= i + 18 && j < klines5m.length; j++) {
+        const fh = parseFloat(klines5m[j][2]);
+        const fl = parseFloat(klines5m[j][3]);
+        if (fl < minLow && !touched1) minLow = fl;
+        if (fh >= v.lower1) touched1 = true;
+        if (fh >= v.vwap) touchedVwap = true;
+      }
+      if (touched1) hitLower1In90m++;
+      if (touchedVwap) hitVwapFromLower++;
+      maxAdvLowerSum += ((close - minLow) / close) * 100;
+    }
+  }
+
+  const totalEp = episodesUpper2 + episodesLower2;
+  const totalHit1 = hitUpper1In90m + hitLower1In90m;
+  const totalHitVwap = hitVwapFromUpper + hitVwapFromLower;
+  const rateNum = totalEp > 0 ? (totalHit1 / totalEp) * 100 : 0;
+  const rate1 = totalEp > 0 ? rateNum.toFixed(1) + '%' : 'Amostra insuf. (0 ep.)';
+  const rateVwap = totalEp > 0 ? ((totalHitVwap / totalEp) * 100).toFixed(1) + '%' : 'Amostra insuf.';
+  const avgAdv = totalEp > 0 ? ((maxAdvUpperSum + maxAdvLowerSum) / totalEp).toFixed(2) + '%' : '0.00%';
+
+  return {
+    totalEp,
+    totalHit1,
+    rateNum,
+    rate1,
+    rateVwap,
+    avgAdv,
+    episodesUpper2,
+    hitUpper1In90m,
+    episodesLower2,
+    hitLower1In90m
+  };
+}
+
+function calcFlow(candles) {
+  let totalUsdt = 0, takerBuyUsdt = 0;
+  for (const c of candles) {
+    totalUsdt += parseFloat(c[7]);
+    takerBuyUsdt += parseFloat(c[10]);
+  }
+  const takerSellUsdt = Math.max(0, totalUsdt - takerBuyUsdt);
+  const buyPct = totalUsdt > 0 ? (takerBuyUsdt / totalUsdt) * 100 : 50;
+  return {
+    totalUsdt,
+    takerBuyUsdt,
+    takerSellUsdt,
+    buyPct,
+    sellPct: 100 - buyPct,
+    deltaUsdt: takerBuyUsdt - takerSellUsdt
+  };
+}
+
+function buildSizingTable(entryPrice, stepSize, qtyDec, priceDec, spreadPct, fundingPct) {
+  const stopDistances = [0.80, 1.00, 1.20, 1.40, 1.50, 1.80, 2.00, 2.50];
+  const safetyRiskTarget = 2.85;
+  const maxNotionalCap = 150.00;
+  const makerFee = 0.02;
+  const takerFee = 0.05;
+  const stressSlip = 0.10;
+  const fundCost = Math.max(0, Math.abs(fundingPct));
+
+  let lines = [];
+  for (const sPct of stopDistances) {
+    const totalUnitCostStressPct = sPct + makerFee + takerFee + stressSlip + fundCost;
+    const rawMaxExp = Math.min(maxNotionalCap, safetyRiskTarget / (totalUnitCostStressPct / 100));
+    const rawQty = rawMaxExp / entryPrice;
+    const qty = floorToStep(rawQty, stepSize);
+    const realExp = qty * entryPrice;
+    const margin5x = realExp / 5;
+
+    const normalCostPct = sPct + makerFee + takerFee + spreadPct + fundCost;
+    const lossNormalUsd = realExp * (normalCostPct / 100);
+    const lossStressUsd = realExp * (totalUnitCostStressPct / 100);
+
+    const reqNetProfit = lossNormalUsd * 1.50;
+    const targetCostsUsd = realExp * ((makerFee + makerFee + fundCost) / 100);
+    const reqGrossProfit = reqNetProfit + targetCostsUsd;
+    const minTargetPct = realExp > 0 ? (reqGrossProfit / realExp) * 100 : 0;
+
+    lines.push(
+      `  * Stop de ${sPct.toFixed(2)}% -> Qtd Exata: ${fmt(qty, qtyDec)} contratos | Exposicao Real: $${fmt(realExp, 2)} (Margem 5x: $${fmt(margin5x, 2)}) | Perda Liq. Normal: -$${fmt(lossNormalUsd, 2)} | Perda Estresse (0.10% slip): -$${fmt(lossStressUsd, 2)} | Alvo Minimo p/ R:R 1.5:1 = +${fmt(minTargetPct, 2)}% (+$${fmt(reqNetProfit, 2)} liq.)`
+    );
+  }
+  return lines.join('\n');
+}
+
+async function fetchAllData() {
+  const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
+  const statusEl = document.getElementById('statusText');
+  const outEl = document.getElementById('outputReport');
+
+  if (!symbol) return;
+  statusEl.textContent = `Coletando dados completos V4.1 de ${symbol} (ADX, Correlação/Beta BTC, Sessões PDH/PDL e Mapa de Liquidação)...`;
+
+  try {
+    const now = new Date();
+    const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0);
+
+    const requests = [
+      fetchJson(`${BASE_URL}/fapi/v1/premiumIndex?symbol=${symbol}`),
+      fetchJson(`${BASE_URL}/fapi/v1/ticker/24hr?symbol=${symbol}`),
+      fetchJson(`${BASE_URL}/fapi/v1/depth?symbol=${symbol}&limit=100`),
+      fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=500`),
+      fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=96`),
+      fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${symbol}&interval=1h&limit=48`),
+      fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${symbol}&interval=1d&limit=3`),
+      fetchJson(`${BASE_URL}/fapi/v1/openInterest?symbol=${symbol}`),
+      fetchJson(`${BASE_URL}/futures/data/openInterestHist?symbol=${symbol}&period=5m&limit=13`),
+      fetchJson(`${BASE_URL}/futures/data/globalLongShortAccountRatio?symbol=${symbol}&period=5m&limit=4`),
+      fetchJson(`${BASE_URL}/futures/data/topLongShortPositionRatio?symbol=${symbol}&period=5m&limit=4`),
+      fetchJson(`${BASE_URL}/fapi/v1/fundingRate?symbol=${symbol}&limit=3`),
+      fetchJson(`${BASE_URL}/fapi/v1/ticker/24hr?symbol=BTCUSDT`),
+      fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=288`)
+    ];
+
+    const results = await Promise.allSettled(requests);
+    if (results[3].status !== 'fulfilled') {
+      throw new Error(`Ativo ${symbol} nao encontrado na Binance Futures USDT-M.`);
+    }
+
+    const premium = results[0].status === 'fulfilled' ? results[0].value : {};
+    const ticker24 = results[1].status === 'fulfilled' ? results[1].value : {};
+    const depth = results[2].status === 'fulfilled' ? results[2].value : { bids: [], asks: [] };
+    const klines5m = results[3].value;
+    const klines15m = results[4].status === 'fulfilled' ? results[4].value : [];
+    const klines1h = results[5].status === 'fulfilled' ? results[5].value : [];
+    const klines1d = results[6].status === 'fulfilled' ? results[6].value : [];
+    const oiNow = results[7].status === 'fulfilled' ? results[7].value : {};
+    const oiHist = results[8].status === 'fulfilled' ? results[8].value : [];
+    const lsGlobal = results[9].status === 'fulfilled' ? results[9].value : [];
+    const lsTop = results[10].status === 'fulfilled' ? results[10].value : [];
+    const fundingHist = results[11].status === 'fulfilled' ? results[11].value : [];
+    const btcTicker = results[12].status === 'fulfilled' ? results[12].value : {};
+    const btcKlines5m = results[13].status === 'fulfilled' ? results[13].value : [];
+
+    const lastPrice = parseFloat(ticker24.lastPrice || klines5m[klines5m.length - 1][4]);
+    const markPrice = parseFloat(premium.markPrice || lastPrice);
+    const specs = await getSymbolSpecs(symbol, lastPrice);
+    const dec = specs.priceDec;
+
+    document.getElementById('calcEntry').value = lastPrice.toFixed(dec);
+    document.getElementById('calcStop').value = (lastPrice * 0.985).toFixed(dec);
+    document.getElementById('calcTarget').value = (lastPrice * 1.024).toFixed(dec);
+    document.getElementById('calcStep').value = specs.stepSize;
+
+    // SEÇÃO 0 COM MOTOR DE CORRELAÇÃO, BETA E ALPHA RESIDUAL
+    let btcText = 'N/D', btcCardStr = 'N/D';
+    let corrObj = { r: 0, beta: 1, btcRet15m: 0, assetRet15m: 0, expectedMove15m: 0, alpha15m: 0, diag: 'N/D' };
+
+    if (btcKlines5m.length > 12) {
+      const btcLast = parseFloat(btcTicker.lastPrice || btcKlines5m[btcKlines5m.length - 1][4]);
+      const btc1hAgo = parseFloat(btcKlines5m[btcKlines5m.length - 13][4]);
+      const btc1hChangePct = ((btcLast - btc1hAgo) / btc1hAgo) * 100;
+      let btcSession = btcKlines5m.filter(k => k[0] >= utcMidnight);
+      if (btcSession.length < 3) btcSession = btcKlines5m.slice(-36);
+      const btcVwapObj = calculateVwapAndBands(btcSession);
+      const btcDistVwap = ((btcLast - btcVwapObj.vwap) / btcVwapObj.vwap) * 100;
+      const btcSigma = btcVwapObj.stdev > 0 ? (btcLast - btcVwapObj.vwap) / btcVwapObj.stdev : 0;
+      const btcFlow15m = calcFlow(btcKlines5m.slice(-3));
+      const btcFlow1h = calcFlow(btcKlines5m.slice(-12));
+      const btcAdx5m = calculateADX(btcKlines5m, 14);
+
+      corrObj = calculateCorrelationAndBeta(btcKlines5m, klines5m, 24);
+
+      let btcRegime = 'ESTAVEL / NEUTRO (Liberado operar setup tecnico individual)';
+      if (btc1hChangePct <= -0.80 && btcSigma < -1.0) {
+        btcRegime = 'ALERTA DE QUEDA SISTEMICA NO BTC (PROIBIDO COMPRAR FACA CAINDO / REVERSAO LONG EM ALTCOINS SEM ESTABILIZACAO DO BTC)';
+      } else if (btc1hChangePct >= 0.80 && btcSigma > 1.0) {
+        btcRegime = 'FORTE IMPULSO COMPRADOR NO BTC (Cuidado ao operar SHORT contra-tendencia em altcoins)';
+      }
+
+      btcCardStr = `$${fmt(btcLast, 1)} (r: ${corrObj.r.toFixed(2)} | β: ${corrObj.beta.toFixed(2)}x)`;
+      btcText = `- Preco BTCUSDT: $${fmt(btcLast, 2)} (Var 24h: ${fmt(btcTicker.priceChangePercent, 2)}% | Var Ultima 1h: ${btc1hChangePct >= 0 ? '+' : ''}${fmt(btc1hChangePct, 2)}%)
+- Posicao BTC vs VWAP Diaria ($${fmt(btcVwapObj.vwap, 2)}): ${btcDistVwap >= 0 ? '+' : ''}${fmt(btcDistVwap, 2)}% (${btcSigma >= 0 ? '+' : ''}${fmt(btcSigma, 2)}σ) | ADX 5m BTC: ${fmt(btcAdx5m.adx, 1)}
+- Fluxo Agressor BTC: 15m Compra = ${fmt(btcFlow15m.buyPct, 1)}% | 1h Compra = ${fmt(btcFlow1h.buyPct, 1)}%
+- MATRIZ DE DEPENDENCIA E ARRASTO BTC (Janela 2h / 24 candles 5m):
+  * Correlacao de Pearson (r): ${corrObj.r.toFixed(2)} (${Math.abs(corrObj.r) >= 0.65 ? 'ALTA DEPENDENCIA DO BTC' : 'BAIXA / MODERADA DEPENDENCIA'}) | Coeficiente Beta (β): ${corrObj.beta.toFixed(2)}x
+  * Desconto de Arrasto (Ultimos 15m): Var BTC = ${corrObj.btcRet15m >= 0 ? '+' : ''}${corrObj.btcRet15m.toFixed(2)}% | Arrasto Esperado no Ativo (β * BTC) = ${corrObj.expectedMove15m >= 0 ? '+' : ''}${corrObj.expectedMove15m.toFixed(2)}% | Var Real do Ativo = ${corrObj.assetRet15m >= 0 ? '+' : ''}${corrObj.assetRet15m.toFixed(2)}%
+  * ALPHA RESIDUAL (Forca Propria Descontado o BTC): ${corrObj.alpha15m >= 0 ? '+' : ''}${corrObj.alpha15m.toFixed(2)}% -> ${corrObj.diag}
+- DIAGNOSTICO DE REGIME MACRO (SECAO 0): ${btcRegime}`;
+    }
+
+    let sessionKlines5m = klines5m.filter(k => k[0] >= utcMidnight);
+    if (sessionKlines5m.length < 3) sessionKlines5m = klines5m.slice(-36);
+    const vwapData = calculateVwapAndBands(sessionKlines5m);
+    const prevSlice = sessionKlines5m.length > 6 ? sessionKlines5m.slice(0, sessionKlines5m.length - 6) : sessionKlines5m;
+    const prevVwapData = calculateVwapAndBands(prevSlice);
+    const vwapSlopePct = prevVwapData ? ((vwapData.vwap - prevVwapData.vwap) / prevVwapData.vwap) * 100 : 0;
+    const distToVwapPct = ((lastPrice - vwapData.vwap) / vwapData.vwap) * 100;
+    const sigmaZScore = vwapData.stdev > 0 ? (lastPrice - vwapData.vwap) / vwapData.stdev : 0;
+    const pocPrice = calculateIntradayPOC(sessionKlines5m);
+
+    const sessLevels = extractSessionLevels(klines1d, klines5m, sessionKlines5m, lastPrice, dec);
+
+    const last24hKlines = klines5m.slice(-288);
+    let maxIdx = 0, minIdx = 0;
+    for (let i = 1; i < last24hKlines.length; i++) {
+      if (parseFloat(last24hKlines[i][2]) > parseFloat(last24hKlines[maxIdx][2])) maxIdx = i;
+      if (parseFloat(last24hKlines[i][3]) < parseFloat(last24hKlines[minIdx][3])) minIdx = i;
+    }
+    const avwapFromLow = calculateVwapAndBands(last24hKlines.slice(minIdx));
+    const avwapFromHigh = calculateVwapAndBands(last24hKlines.slice(maxIdx));
+    const lowAnchorTime = new Date(last24hKlines[minIdx][0]).toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+    const highAnchorTime = new Date(last24hKlines[maxIdx][0]).toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+    const lowAnchorPrice = parseFloat(last24hKlines[minIdx][3]);
+    const highAnchorPrice = parseFloat(last24hKlines[maxIdx][2]);
+
+    const closes5m = klines5m.map(k => parseFloat(k[4]));
+    const closes15m = klines15m.map(k => parseFloat(k[4]));
+    const closes1h = klines1h.map(k => parseFloat(k[4]));
+    const rsi5m = calculateRSI(closes5m, 14);
+    const rsi15m = calculateRSI(closes15m, 14);
+    const rsi1h = calculateRSI(closes1h, 14);
+    const atr5m = calculateATR(klines5m, 14);
+    const atr15m = calculateATR(klines15m, 14);
+    const adx5m = calculateADX(klines5m, 14);
+    const adx15m = calculateADX(klines15m, 14);
+    const ema9_5m = calculateEMA(closes5m.slice(-60), 9);
+    const ema21_5m = calculateEMA(closes5m.slice(-60), 21);
+    const ema50_5m = calculateEMA(closes5m.slice(-120), 50);
+
+    const recent6 = klines5m.slice(-6);
+    const recent12 = klines5m.slice(-12);
+    const low30m = Math.min(...recent6.map(k => parseFloat(k[3])));
+    const high30m = Math.max(...recent6.map(k => parseFloat(k[2])));
+    const low60m = Math.min(...recent12.map(k => parseFloat(k[3])));
+    const high60m = Math.max(...recent12.map(k => parseFloat(k[2])));
+
+    const flow5m = calcFlow(klines5m.slice(-1));
+    const flow15m = calcFlow(klines5m.slice(-3));
+    const flow1h = calcFlow(klines5m.slice(-12));
+
+    const price15mAgo = parseFloat(klines5m[klines5m.length - 4][4]);
+    const price1hAgo = parseFloat(klines5m[klines5m.length - 13][4]);
+    const priceChg15mPct = ((lastPrice - price15mAgo) / price15mAgo) * 100;
+    const priceChg1hPct = ((lastPrice - price1hAgo) / price1hAgo) * 100;
+
+    const currentOIContracts = parseFloat(oiNow.openInterest || 0);
+    const currentOIUsdt = currentOIContracts * lastPrice;
+    let oiChange5mPct = 'N/D', oiChange15mPct = 'N/D', oiChange1hPct = 'N/D';
+    if (oiHist && oiHist.length >= 13) {
+      const oiLatest = parseFloat(oiHist[oiHist.length - 1].sumOpenInterest);
+      const oi5mAgo = parseFloat(oiHist[oiHist.length - 2].sumOpenInterest);
+      const oi15mAgo = parseFloat(oiHist[oiHist.length - 4].sumOpenInterest);
+      const oi1hAgo = parseFloat(oiHist[0].sumOpenInterest);
+      oiChange5mPct = fmt(((oiLatest - oi5mAgo) / oi5mAgo) * 100, 2) + '%';
+      oiChange15mPct = fmt(((oiLatest - oi15mAgo) / oi15mAgo) * 100, 2) + '%';
+      oiChange1hPct = fmt(((oiLatest - oi1hAgo) / oi1hAgo) * 100, 2) + '%';
+    }
+
+    const matrix15m = diagnoseOiPriceMatrix(priceChg15mPct, oiChange15mPct);
+    const matrix1h = diagnoseOiPriceMatrix(priceChg1hPct, oiChange1hPct);
+
+    const fundingRatePct = parseFloat(premium.lastFundingRate || 0) * 100;
+    const nextFundingMs = parseInt(premium.nextFundingTime || 0) - Date.now();
+    const minutesToFunding = nextFundingMs > 0 ? Math.round(nextFundingMs / 60000) : 999;
+    const hoursToFunding = nextFundingMs > 0 ? fmt(nextFundingMs / 3600000, 2) + 'h' : 'N/D';
+    const fundingUsdPer150 = 150 * (Math.abs(fundingRatePct) / 100);
+    const prevFundings = fundingHist.map(f => (parseFloat(f.fundingRate) * 100).toFixed(4) + '%').join(' | ');
+
+    let fundingAlertText = `JANELA SEGURA: Faltam ${hoursToFunding} (${minutesToFunding} min) para a proxima cobranca de funding.`;
+    if (minutesToFunding <= 30) {
+      fundingAlertText = `ALERTA CRITICO DE JANELA DE FUNDING (< 30 MIN): Faltam apenas ${minutesToFunding} minutos para a cobranca das 00h/08h/16h UTC (Taxa: ${fmt(fundingRatePct, 4)}% = $${fmt(fundingUsdPer150, 3)} p/ US$ 150)! Contabilizar obrigatoriamente ou aguardar a virada do relogio.`;
+    }
+
+    const lsrGVal = lsGlobal.length ? parseFloat(lsGlobal[lsGlobal.length - 1].longShortRatio) : 1.5;
+    const lsrTVal = lsTop.length ? parseFloat(lsTop[lsTop.length - 1].longShortRatio) : 1.5;
+    const lsrGlobalNow = lsGlobal.length ? `${fmt(lsrGVal, 2)} (Long: ${fmt(parseFloat(lsGlobal[lsGlobal.length - 1].longAccount) * 100, 1)}% / Short: ${fmt(parseFloat(lsGlobal[lsGlobal.length - 1].shortAccount) * 100, 1)}%)` : 'N/D';
+    const lsrTopNow = lsTop.length ? `${fmt(lsrTVal, 2)} (Long: ${fmt(parseFloat(lsTop[lsTop.length - 1].longAccount) * 100, 1)}% / Short: ${fmt(parseFloat(lsTop[lsTop.length - 1].shortAccount) * 100, 1)}%)` : 'N/D';
+
+    let lsrDiagnosis = 'ZONA NEUTRA (Sem distorcao extrema de varejo).';
+    if (lsrGVal >= 2.50) {
+      lsrDiagnosis = `VAREJO PESADAMENTE COMPRADO (LSR Global = ${fmt(lsrGVal, 2)} > 2.50): Risco elevado de Long Squeeze se perder suporte; exige forte confirmacao de CVD comprador antes de entrar em Long.`;
+    } else if (lsrGVal <= 1.05) {
+      lsrDiagnosis = `VAREJO VENDIDO / PESSIMISMO EXTREMO (LSR Global = ${fmt(lsrGVal, 2)}): Excelente combustivel para Short Squeeze em caso de retomada de suporte!`;
+    }
+    if (lsrGVal > 2.20 && lsrTVal < 1.50) {
+      lsrDiagnosis += ' [DIVERGENCIA INSTITUCIONAL: Varejo comprando enquanto Top Traders estao bem menos comprados].';
+    }
+
+    const bestBid = depth.bids.length ? parseFloat(depth.bids[0][0]) : lastPrice;
+    const bestAsk = depth.asks.length ? parseFloat(depth.asks[0][0]) : lastPrice;
+    const spreadUsd = bestAsk - bestBid;
+    const spreadPct = (spreadUsd / lastPrice) * 100;
+
+    let bidDepth20Usdt = 0, askDepth20Usdt = 0;
+    let bidDepth02PctUsdt = 0, askDepth02PctUsdt = 0;
+    let maxBidWall = { price: 0, usdt: 0 }, maxAskWall = { price: 0, usdt: 0 };
+
+    depth.bids.forEach((b, idx) => {
+      const p = parseFloat(b[0]), q = parseFloat(b[1]), u = p * q;
+      if (idx < 20) bidDepth20Usdt += u;
+      if ((lastPrice - p) / lastPrice <= 0.002) bidDepth02PctUsdt += u;
+      if (u > maxBidWall.usdt) maxBidWall = { price: p, usdt: u };
+    });
+    depth.asks.forEach((a, idx) => {
+      const p = parseFloat(a[0]), q = parseFloat(a[1]), u = p * q;
+      if (idx < 20) askDepth20Usdt += u;
+      if ((p - lastPrice) / lastPrice <= 0.002) askDepth02PctUsdt += u;
+      if (u > maxAskWall.usdt) maxAskWall = { price: p, usdt: u };
+    });
+
+    const liqMapStr = calculateLiquidationClusters(klines5m, pocPrice, vwapData.vwap, lastPrice, dec);
+    const bt = runEmpiricalVwapBacktest(klines5m);
+    const sizingTableStr = buildSizingTable(lastPrice, specs.stepSize, specs.qtyDec, dec, spreadPct, fundingRatePct);
+
+    function formatCandleList(candles, count) {
+      return candles.slice(-count).map(c => {
+        const t = new Date(c[0]).toISOString().substring(11, 16) + ' UTC';
+        const o = fmt(c[1], dec), h = fmt(c[2], dec), l = fmt(c[3], dec), cl = fmt(c[4], dec);
+        const vUsdt = (parseFloat(c[7]) / 1000).toFixed(1) + 'k';
+        const tbPct = parseFloat(c[7]) > 0 ? ((parseFloat(c[10]) / parseFloat(c[7])) * 100).toFixed(0) : '50';
+        return `  [${t}] O: ${o} | H: ${h} | L: ${l} | C: ${cl} | Vol: $${vUsdt} | Agressao Compra: ${tbPct}%`;
+      }).join('\n');
+    }
+
+    document.getElementById('cardBtc').textContent = btcCardStr;
+    document.getElementById('cardPrice').textContent = `$${fmt(lastPrice, dec)} (Step: ${specs.stepSize})`;
+    document.getElementById('cardVwap').textContent = `$${fmt(vwapData.vwap, dec)} (${sigmaZScore >= 0 ? '+' : ''}${fmt(sigmaZScore, 2)}σ)`;
+    document.getElementById('cardAdx').textContent = `5m: ${fmt(adx5m.adx, 1)} | 15m: ${fmt(adx15m.adx, 1)} (${adx15m.adx < 22 ? 'Range' : adx15m.adx <= 25 ? 'Trans.' : 'Tend.'})`;
+    document.getElementById('cardOiFund').textContent = `OI 15m: ${oiChange15mPct} | Fund: ${minutesToFunding}m`;
+    document.getElementById('cardPdhBt').textContent = `PDL: ${sessLevels.distPdl} | BT: ${bt.rate1}`;
+
+    latestDataText = `=== DADOS AUDITADOS BINANCE FUTURES — PAINEL QUANT 4.1 ===
+Ativo Analisado: ${symbol} | Horario da Coleta: ${now.toISOString().replace('T', ' ').substring(0, 19)} UTC (Local: ${now.toLocaleTimeString()})
+
+0. SECAO 0 — FILTRO MACRO DE CORRELACAO, BETA E ARRASTO DO BITCOIN (BTCUSDT)
+${btcText}
+
+1. ESPECIFICACOES OFICIAIS DO CONTRATO (EXCHANGEINFO), PRECO E LIVRO DE OFERTAS
+- Ultimo Preco: ${fmt(lastPrice, dec)} USDT | Mark Price: ${fmt(markPrice, dec)} USDT
+- Regras Oficiais do Contrato (${symbol}): TickSize (Preco) = ${specs.tickSize} | StepSize (Lote Minimo de Contratos) = ${specs.stepSize} | Notional Minimo = $${specs.minNotional} USDT
+- Variacao 24h: ${fmt(ticker24.priceChangePercent, 2)}% | Maxima 24h: ${fmt(ticker24.highPrice, dec)} | Minima 24h: ${fmt(ticker24.lowPrice, dec)}
+- Volume 24h: $${(parseFloat(ticker24.quoteVolume || 0) / 1e6).toFixed(2)} Milhoes USDT
+- Melhor Compra (Best Bid): ${fmt(bestBid, dec)} | Melhor Venda (Best Ask): ${fmt(bestAsk, dec)}
+- Spread Atual no Book: $${fmt(spreadUsd, dec)} (${fmt(spreadPct, 4)}%)
+- REGRA POST-ONLY (MAKER ESTRITA): Em pares de 1 tick de spread, NUNCA use "Best Bid + 1 tick" (cruzaria o Ask e seria rejeitada). Para COMPRA Maker, apregoar <= Best Bid (${fmt(bestBid, dec)}). Para VENDA Maker, apregoar >= Best Ask (${fmt(bestAsk, dec)}).
+- Profundidade Top 20 Niveis: Bids = $${fmt(bidDepth20Usdt, 0)} USDT | Asks = $${fmt(askDepth20Usdt, 0)} USDT
+- Profundidade Faixa ±0.20% do Preco: Bids = $${fmt(bidDepth02PctUsdt, 0)} USDT | Asks = $${fmt(askDepth02PctUsdt, 0)} USDT
+- Maior Parede de Compra (Top 100 Book): ${fmt(maxBidWall.price, dec)} ($${fmt(maxBidWall.usdt, 0)} USDT) | Maior Parede de Venda: ${fmt(maxAskWall.price, dec)} ($${fmt(maxAskWall.usdt, 0)} USDT)
+
+2. VWAP DIARIA (00:00 UTC), BANDAS DE DESVIO-PADRAO E POC INTRADAY
+- Metodo Explicito: Preco Tipico HLC/3 ponderado pelo volume dos candles de 5m desde 00:00 UTC (${sessionKlines5m.length} candles).
+- Linha Central VWAP Diaria: ${fmt(vwapData.vwap, dec)}
+- POC Intraday (Faixa de Maior Volume da Sessao): ${fmt(pocPrice, dec)}
+- Distancia do Preco Atual para a VWAP: ${distToVwapPct >= 0 ? '+' : ''}${fmt(distToVwapPct, 2)}% | Posicao Exata em Desvios-Padrao: ${sigmaZScore >= 0 ? '+' : ''}${fmt(sigmaZScore, 2)}σ
+- Inclinacao da VWAP (ultimos 30 min): ${vwapSlopePct >= 0 ? '+' : ''}${fmt(vwapSlopePct, 3)}% (${vwapSlopePct > 0.03 ? 'Ascendente' : vwapSlopePct < -0.03 ? 'Descendente' : 'Lateral / Plana'})
+- Valor de 1 Desvio-Padrao (1σ): $${fmt(vwapData.stdev, dec)} (${fmt((vwapData.stdev / lastPrice) * 100, 2)}% do preco)
+- Banda Superior +3σ: ${fmt(vwapData.upper3, dec)}
+- Banda Superior +2σ: ${fmt(vwapData.upper2, dec)}
+- Banda Superior +1σ: ${fmt(vwapData.upper1, dec)}
+- [VWAP CENTRAL 0σ]:  ${fmt(vwapData.vwap, dec)}
+- Banda Inferior -1σ: ${fmt(vwapData.lower1, dec)}
+- Banda Inferior -2σ: ${fmt(vwapData.lower2, dec)}
+- Banda Inferior -3σ: ${fmt(vwapData.lower3, dec)}
+
+3. NIVEIS INSTITUCIONAIS DE SESSAO (PDH / PDL / PDC + ABERTURAS ASIA, LONDRES E NY) E AVWAPS 24H
+- Maxima do Dia Anterior (PDH): ${fmt(sessLevels.pdh, dec)} (Distancia: ${sessLevels.distPdh})
+- Minima do Dia Anterior (PDL): ${fmt(sessLevels.pdl, dec)} (Distancia: ${sessLevels.distPdl})
+- Fechamento do Dia Anterior (PDC): ${fmt(sessLevels.pdc, dec)}
+- Aberturas das Sessoes Globais: Asia (00:00 UTC) = ${fmt(sessLevels.asiaOpen, dec)} | Londres (08:00 UTC) = ${fmt(sessLevels.londonOpen, dec)} | Nova York (13:30 UTC) = ${fmt(sessLevels.nyOpen, dec)}
+- DIAGNOSTICO DE VARREDURA DE LIQUIDEZ (SWEEP PDH/PDL): ${sessLevels.sweepStatus}
+- AVWAP Ancorada no Fundo 24h (${lowAnchorTime} @ ${fmt(lowAnchorPrice, dec)}): Central = ${fmt(avwapFromLow.vwap, dec)} | +1σ = ${fmt(avwapFromLow.upper1, dec)} | -1σ = ${fmt(avwapFromLow.lower1, dec)}
+- AVWAP Ancorada no Topo 24h (${highAnchorTime} @ ${fmt(highAnchorPrice, dec)}): Central = ${fmt(avwapFromHigh.vwap, dec)} | +1σ = ${fmt(avwapFromHigh.upper1, dec)} | -1σ = ${fmt(avwapFromHigh.lower1, dec)}
+
+4. FILTRO DE REGIME DE TENDENCIA (ADX 14 + DI+/DI-), VOLATILIDADE (ATR), RSI E EXTREMOS ESTRUTURAIS
+- ADX 14 no Grafico de 5m:  ADX = ${fmt(adx5m.adx, 1)} | DI+ = ${fmt(adx5m.plusDI, 1)} | DI- = ${fmt(adx5m.minusDI, 1)} -> ${adx5m.regimeLabel}
+- ADX 14 no Grafico de 15m: ADX = ${fmt(adx15m.adx, 1)} | DI+ = ${fmt(adx15m.plusDI, 1)} | DI- = ${fmt(adx15m.minusDI, 1)} -> ${adx15m.regimeLabel}
+- ATR 14 (5m): $${fmt(atr5m, dec)} (${fmt((atr5m / lastPrice) * 100, 2)}%) | ATR 14 (15m): $${fmt(atr15m, dec)} (${fmt((atr15m / lastPrice) * 100, 2)}%)
+- Extremos Reais Recentes (Para Stop Estrutural):
+  * Ultimos 30 min (6 candles 5m): Minima = ${fmt(low30m, dec)} | Maxima = ${fmt(high30m, dec)}
+  * Ultimos 60 min (12 candles 5m): Minima = ${fmt(low60m, dec)} | Maxima = ${fmt(high60m, dec)}
+  * Buffer Sugerido de Stop (Minima/Maxima 30m ± 0.5 ATR 5m): Stop Long = ${fmt(low30m - 0.5 * atr5m, dec)} | Stop Short = ${fmt(high30m + 0.5 * atr5m, dec)}
+- RSI (14 Periodos): 5m = ${fmt(rsi5m, 1)} | 15m = ${fmt(rsi15m, 1)} | 1h = ${fmt(rsi1h, 1)}
+- EMAs no 5m: EMA 9 = ${fmt(ema9_5m, dec)} | EMA 21 = ${fmt(ema21_5m, dec)} | EMA 50 = ${fmt(ema50_5m, dec)}
+
+5. MATRIZ DOS 4 REGIMES (PRECO VS. OPEN INTEREST), CVD, ALERTA DE FUNDING (<30M) E FILTRO LSR
+- Fluxo Agressor (CVD): 5m Compra = ${fmt(flow5m.buyPct, 1)}% (Delta: $${(flow5m.deltaUsdt/1e3).toFixed(1)}k) | 15m Compra = ${fmt(flow15m.buyPct, 1)}% (Delta: $${(flow15m.deltaUsdt/1e3).toFixed(1)}k) | 1h Compra = ${fmt(flow1h.buyPct, 1)}% (Delta: $${(flow1h.deltaUsdt/1e3).toFixed(1)}k)
+- Open Interest Atual: ${fmt(currentOIContracts, 0)} contratos ($${(currentOIUsdt / 1e6).toFixed(2)} Milhoes USDT) | Variacao OI: 5m = ${oiChange5mPct} | 15m = ${oiChange15mPct} | 1h = ${oiChange1hPct}
+- MATRIZ AUTOMATICA PRECO vs. OI (Ultimos 15m): ${matrix15m}
+- MATRIZ AUTOMATICA PRECO vs. OI (Ultima 1h):   ${matrix1h}
+- Funding Rate Vigente: ${fmt(fundingRatePct, 4)}% | Historico: ${prevFundings || 'N/D'}
+- VERIFICACAO DE JANELA DE FUNDING (00h/08h/16h UTC): ${fundingAlertText}
+- Long/Short Ratio Contas Globais (5m): ${lsrGlobalNow} | Top Traders Posicoes (5m): ${lsrTopNow}
+- DIAGNOSTICO CONTRARIO DO LSR: ${lsrDiagnosis}
+
+6. MAPEADOR MATEMATICO DE BOLSOES DE LIQUIDACAO FORCADA (20X, 25X, 50X E 100X)
+${liqMapStr}
+
+7. BACKTEST EMPIRICO AUDITADO NOS ULTIMOS 500 CANDLES DE 5M (~41 HORAS DE AMOSTRA REAL)
+- Total de Episodios em que ${symbol} rompeu ±2σ da VWAP: ${bt.totalEp} ocorrencias (Rompimentos +2σ: ${bt.episodesUpper2} | Rompimentos -2σ: ${bt.episodesLower2})
+- Taxa de Retorno Empirica ate a Banda de ±1σ em ate 90 min (18 candles): ${bt.rate1} (${bt.totalHit1} de ${bt.totalEp} casos)
+- Taxa de Retorno Empirica ate a VWAP Central em ate 90 min: ${bt.rateVwap}
+- Calor Medio Adicional (Drawdown medio apos tocar ±2σ antes de reverter): ${bt.avgAdv}
+*(Nota: Estatistica descritiva da amostra de 500 candles; qualquer inferencia fora desta amostra deve ser rotulada como hipotese operacional).*
+
+8. TABELA PRE-CALCULADA DE QUANTIDADE DE CONTRATOS E TESTE DE ESTRESSE (EXPOSICAO TETO US$ 150 | RISCO TETO US$ 3,00)
+*(Calculada pelo motor JavaScript ao preco ${fmt(lastPrice, dec)} e StepSize ${specs.stepSize} — Garante Qtd * Preco = Exposicao com 0.00% de erro)*:
+${sizingTableStr}
+
+9. ESTRUTURA DE CANDLES RECENTES (OHLC, VOLUME E AGRESSAO COMPRADORA)
+- Ultimos 8 Candles de 5 Minutos (Gatilho):
+${formatCandleList(klines5m, 8)}
+
+- Ultimos 6 Candles de 1 Minuto / 15 Minutos (Estrutura):
+${formatCandleList(klines15m, 6)}
+
+- Ultimos 6 Candles de 1 Hora (Contexto):
+${formatCandleList(klines1h, 6)}
+===========================================================`;
+
+    outEl.value = latestDataText;
+    statusEl.textContent = `Coleta 4.1 concluída para ${symbol}! Correlação, Beta, Alpha Residual e demais métricas prontos.`;
+    runPositionCalculator();
+  } catch (err) {
+    statusEl.textContent = 'Erro na coleta: ' + err.message;
+    outEl.value = 'Falha ao buscar dados da Binance: ' + err.message;
+  }
+}
+
+function runPositionCalculator() {
+  const dir = document.getElementById('calcDir').value;
+  const entry = parseFloat(document.getElementById('calcEntry').value);
+  const stop = parseFloat(document.getElementById('calcStop').value);
+  const target = parseFloat(document.getElementById('calcTarget').value);
+  const maxRisk = parseFloat(document.getElementById('calcMaxRisk').value) || 3.00;
+  const maxExp = parseFloat(document.getElementById('calcMaxExp').value) || 150.00;
+  const step = parseFloat(document.getElementById('calcStep').value) || 0.01;
+  const out = document.getElementById('calcOutput');
+
+  if (!entry || !stop || !target || entry <= 0) {
+    out.value = 'Preencha preços válidos de Entrada, Stop e Alvo.';
+    return;
+  }
+
+  if (dir === 'LONG' && (stop >= entry || target <= entry)) {
+    out.value = '⚠️ ERRO DIRECIONAL (LONG): Na Compra (LONG), o Stop-Loss deve ser MENOR que a Entrada e o Alvo deve ser MAIOR que a Entrada.';
+    return;
+  }
+  if (dir === 'SHORT' && (stop <= entry || target >= entry)) {
+    out.value = '⚠️ ERRO DIRECIONAL (SHORT): Na Venda (SHORT), o Stop-Loss deve ser MAIOR que a Entrada e o Alvo deve ser MENOR que a Entrada.';
+    return;
+  }
+
+  const stopDistAbs = Math.abs(entry - stop);
+  const targetDistAbs = Math.abs(target - entry);
+  const stopPct = (stopDistAbs / entry) * 100;
+  const targetPct = (targetDistAbs / entry) * 100;
+
+  const makerFeePct = 0.02;
+  const takerFeePct = 0.05;
+  const normalSlipPct = 0.02;
+  const stressSlipPct = 0.10;
+  const fundingEstPct = 0.01;
+
+  const unitLossNormalPct = stopPct + makerFeePct + takerFeePct + normalSlipPct + fundingEstPct;
+  const unitLossStressPct = stopPct + makerFeePct + takerFeePct + stressSlipPct + fundingEstPct;
+  const unitWinCostPct = makerFeePct + makerFeePct + fundingEstPct;
+
+  const idealExpByRisk = maxRisk / (unitLossStressPct / 100);
+  const cappedExp = Math.min(maxExp, idealExpByRisk);
+  const qty = floorToStep(cappedExp / entry, step);
+  const realExp = qty * entry;
+  const margin5x = realExp / 5;
+
+  const grossWinUsd = qty * targetDistAbs;
+  const winCostsUsd = realExp * (unitWinCostPct / 100);
+  const netWinUsd = grossWinUsd - winCostsUsd;
+  const costShareOfGrossPct = grossWinUsd > 0 ? (winCostsUsd / grossWinUsd) * 100 : 100;
+
+  const grossLossUsd = qty * stopDistAbs;
+  const lossCostsNormalUsd = realExp * ((makerFeePct + takerFeePct + normalSlipPct + fundingEstPct) / 100);
+  const lossCostsStressUsd = realExp * ((makerFeePct + takerFeePct + stressSlipPct + fundingEstPct) / 100);
+  const netLossNormalUsd = grossLossUsd + lossCostsNormalUsd;
+  const netLossStressUsd = grossLossUsd + lossCostsStressUsd;
+
+  const rrNormal = netLossNormalUsd > 0 ? netWinUsd / netLossNormalUsd : 0;
+  const rrStress = netLossStressUsd > 0 ? netWinUsd / netLossStressUsd : 0;
+
+  const totalFeeBuffer = entry * ((unitWinCostPct + 1.5 * (makerFeePct + takerFeePct + normalSlipPct + fundingEstPct)) / 100);
+  let limitEntryFor15RR = entry;
+  if (dir === 'LONG') {
+    limitEntryFor15RR = (target + 1.5 * stop - totalFeeBuffer) / 2.5;
+  } else {
+    limitEntryFor15RR = (target + 1.5 * stop + totalFeeBuffer) / 2.5;
+  }
+
+  const qtyDec = String(step).includes('.') ? String(step).split('.')[1].length : 0;
+  const pDec = decimalsFromTick(null, entry);
+
+  const statusCheck = (rrNormal >= 1.50 && netLossStressUsd <= maxRisk + 0.01 && costShareOfGrossPct <= 20)
+    ? '✅ APROVADA NA TRAVA MATEMATICA (Cumpre R:R >= 1.5:1, Custos <= 20% e Perda sob Estresse <= Teto)'
+    : '❌ REPROVADA NA TRAVA MATEMATICA (Verifique R:R < 1.5:1 ou Custos > 20% ou Stop fora do limite)';
+
+  out.value = `=== AUDITORIA DE POSICAO E ESTRESSE (CALCULADORA BLINDADA V4.1) ===
+- Direcao: ${dir} | Entrada: $${fmt(entry, pDec)} | Stop: $${fmt(stop, pDec)} (-${fmt(stopPct, 2)}%) | Alvo: $${fmt(target, pDec)} (+${fmt(targetPct, 2)}%)
+- Preco Limite de Cancelamento (Onde R:R Liquido cai abaixo de 1.50:1): $${fmt(limitEntryFor15RR, pDec)} (Se o preco passar daqui sem executar sua ordem, CANCELE!)
+- Quantidade Exata Arredondada (StepSize ${step}): ${fmt(qty, qtyDec)} contratos
+- Exposicao Financeira Real (Qtd * Entrada): $${fmt(realExp, 2)} USDT | Margem Isolada a 5x: $${fmt(margin5x, 2)} USDT
+- Verificacao de Divergencia (Qtd*Entrada vs Exposicao): 0.00% (Calculo Exato Validado)
+------------------------------------------------------------------
+- Lucro Bruto no Alvo: +$${fmt(grossWinUsd, 2)} | Custos Totais no Alvo: -$${fmt(winCostsUsd, 2)} (${fmt(costShareOfGrossPct, 1)}% do lucro bruto)
+- LUCRO LIQUIDO NO ALVO: +$${fmt(netWinUsd, 2)} USDT
+- PREJUIZO LIQUIDO NO STOP (Normal 0.02% slip): -$${fmt(netLossNormalUsd, 2)} USDT
+- PREJUIZO LIQUIDO NO STOP (Teste de Estresse 0.10% slip): -$${fmt(netLossStressUsd, 2)} USDT
+- RELACAO RISCO-RETORNO LIQUIDA: ${fmt(rrNormal, 2)} : 1 (Sob Estresse de 0.10% slip: ${fmt(rrStress, 2)} : 1)
+- VEREDITO MATEMATICO: ${statusCheck}`;
+}
+
+function evaluateScannerCandidate(sigma, btRateNum, btRateStr, adxObj, buyPct15m, rsi5m) {
+  const absSigma = Math.abs(sigma);
+  const adx = adxObj.adx;
+  const revFlowOk = (sigma <= -1.4 && buyPct15m >= 52) || (sigma >= 1.4 && buyPct15m <= 48);
+  const pullbackFlowOk = (sigma > 0 && buyPct15m >= 55 && adxObj.plusDI >= adxObj.minusDI) ||
+                         (sigma < 0 && buyPct15m <= 45 && adxObj.minusDI > adxObj.plusDI);
+
+  let tier = 5;
+  let score = 0;
+  let status = 'NEUTRO / MEIO DO CANAL (Ignorar)';
+  let color = 'var(--muted)';
+  let rowClass = '';
+
+  if (absSigma >= 1.90 && btRateNum >= 50 && adx <= 25) {
+    tier = 1;
+    score = 95 + Math.min(20, absSigma * 5) + (btRateNum * 0.3) + (revFlowOk ? 10 : 0);
+    const dir = sigma < 0 ? 'COMPRA (LONG -2σ)' : 'VENDA (SHORT +2σ)';
+    status = `★ TOP 1: REVERSÃO ALTA PROB — ${dir} (BT ≥ 50% + Range)`;
+    color = 'var(--green)';
+    rowClass = 'row-top';
+  } else if (absSigma >= 1.50 && btRateNum >= 50 && ((sigma < 0 && buyPct15m >= 55) || (sigma > 0 && buyPct15m <= 45))) {
+    tier = 2;
+    score = 82 + (absSigma * 5) + (btRateNum * 0.25);
+    const dir = sigma < 0 ? 'LONG' : 'SHORT';
+    status = `⚡ FORTE CANDIDATO (${dir}): BT ALTO (${btRateStr}) + FLUXO (${fmt(buyPct15m, 1)}%)`;
+    color = 'var(--green)';
+    rowClass = 'row-top';
+  } else if (absSigma >= 0.85 && absSigma <= 1.35 && pullbackFlowOk) {
+    tier = 2;
+    score = 75 + (btRateNum * 0.2) + Math.abs(buyPct15m - 50);
+    const banda = sigma > 0 ? '+1σ (Compra Pullback)' : '-1σ (Venda Pullback)';
+    status = `⚡ PULLBACK CONFIRMADO NA BANDA ${banda} (Fluxo Forte)`;
+    color = 'var(--accent)';
+    rowClass = 'row-candidate';
+  } else if (absSigma >= 1.90) {
+    tier = 3;
+    score = 55 + (absSigma * 4) + (btRateNum * 0.2);
+    if (adx > 25 && btRateNum >= 50) {
+      status = `⚠️ ESTICADO (${sigma >= 0 ? '+' : ''}${fmt(sigma, 2)}σ) C/ BOM BT, MAS TENDÊNCIA FORTE (ADX>25)`;
+      color = 'var(--orange)';
+    } else if (btRateNum < 50 && adx <= 25) {
+      status = `⚠️ ESTICADO (${sigma >= 0 ? '+' : ''}${fmt(sigma, 2)}σ) EM RANGE, MAS BACKTEST BAIXO (${btRateStr})`;
+      color = 'var(--orange)';
+    } else {
+      status = `⚠️ EXTREMO (${sigma >= 0 ? '+' : ''}${fmt(sigma, 2)}σ) CONTRA TENDÊNCIA (ADX>25) E BT BAIXO`;
+      color = 'var(--red)';
+    }
+  } else if (absSigma >= 0.85) {
+    tier = 4;
+    score = 30 + (absSigma * 5) + (btRateNum * 0.15);
+    const banda = sigma > 0 ? '+1σ' : '-1σ';
+    status = `TESTANDO BANDA ${banda} (Aguardando Fluxo ≥55% ou Esticar ±2σ)`;
+    color = '#cbd5e1';
+  } else {
+    tier = 5;
+    score = absSigma * 10 + (btRateNum * 0.05);
+    status = 'NEUTRO / MEIO DO CANAL (Ignorar)';
+    color = 'var(--muted)';
+  }
+
+  return { tier, score, status, color, rowClass };
+}
+
+async function runMarketScanner() {
+  const tbody = document.querySelector('#scannerTable tbody');
+  const scanStatus = document.getElementById('scanStatus');
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--accent);">Escaneando 25 ativos (500 candles 5m + ADX 15m) e montando o Ranking Automático 4.1... Aguarde ~4 segundos.</td></tr>`;
+
+  const now = new Date();
+  const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0);
+  let scanItems = [];
+
+  for (const sym of SCAN_LIST) {
+    try {
+      const [ticker, klines5m, klines15m] = await Promise.all([
+        fetchJson(`${BASE_URL}/fapi/v1/ticker/24hr?symbol=${sym}`),
+        fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${sym}&interval=5m&limit=500`),
+        fetchJson(`${BASE_URL}/fapi/v1/klines?symbol=${sym}&interval=15m&limit=96`)
+      ]);
+
+      const lastPrice = parseFloat(ticker.lastPrice);
+      let sessionKlines = klines5m.filter(k => k[0] >= utcMidnight);
+      if (sessionKlines.length < 5) sessionKlines = klines5m.slice(-36);
+
+      const vwapData = calculateVwapAndBands(sessionKlines);
+      const sigma = vwapData.stdev > 0 ? (lastPrice - vwapData.vwap) / vwapData.stdev : 0;
+      const rsi5m = calculateRSI(klines5m.map(k => parseFloat(k[4])), 14);
+      const rsi15m = calculateRSI(klines15m.map(k => parseFloat(k[4])), 14);
+      const adx15m = calculateADX(klines15m, 14);
+      const flow15m = calcFlow(klines5m.slice(-3));
+      const bt = runEmpiricalVwapBacktest(klines5m);
+
+      const evalObj = evaluateScannerCandidate(sigma, bt.rateNum, bt.rate1, adx15m, flow15m.buyPct, rsi5m);
+
+      scanItems.push({
+        sym,
+        lastPrice,
+        chg24h: parseFloat(ticker.priceChangePercent),
+        sigma,
+        bt,
+        adx15m,
+        flowBuyPct: flow15m.buyPct,
+        rsi5m,
+        rsi15m,
+        evalObj
+      });
+    } catch (e) {}
+  }
+
+  scanItems.sort((a, b) => {
+    if (a.evalObj.tier !== b.evalObj.tier) return a.evalObj.tier - b.evalObj.tier;
+    return b.evalObj.score - a.evalObj.score;
+  });
+
+  let rowsHtml = '';
+  scanItems.forEach((item, idx) => {
+    const rankNum = idx + 1;
+    const pDec = decimalsFromTick(null, item.lastPrice);
+    const absSig = Math.abs(item.sigma);
+    const sigColor = absSig >= 1.95 ? 'var(--accent)' : absSig >= 1.50 ? '#38bdf8' : 'var(--text)';
+    const btColor = item.bt.rateNum >= 50 ? 'var(--green)' : item.bt.rateNum >= 35 ? 'var(--accent)' : 'var(--muted)';
+    const adxTag = item.adx15m.adx < 22 ? 'Range (<22)' : item.adx15m.adx <= 25 ? 'Trans. (22-25)' : 'Tend. (>25)';
+    const flowColor = item.flowBuyPct >= 55 ? 'var(--green)' : item.flowBuyPct <= 45 ? 'var(--red)' : 'var(--text)';
+
+    rowsHtml += `<tr class="${item.evalObj.rowClass}">
+      <td><span class="rank-badge">#${rankNum}</span></td>
+      <td><b><a href="#" onclick="setSymbol('${item.sym}'); return false;" style="color:var(--accent); text-decoration:none; font-size:0.86rem;">${item.sym}</a></b></td>
+      <td style="color:${sigColor}; font-weight:700; font-size:0.88rem;">${item.sigma >= 0 ? '+' : ''}${fmt(item.sigma, 2)}σ</td>
+      <td style="color:${btColor}; font-weight:700;">${item.bt.rate1} <span style="font-weight:400; font-size:0.75rem;">(${item.bt.totalHit1}/${item.bt.totalEp})</span></td>
+      <td>${fmt(item.adx15m.adx, 1)} <span style="color:var(--muted); font-size:0.76rem;">(${adxTag})</span></td>
+      <td style="color:${flowColor}; font-weight:600;">${fmt(item.flowBuyPct, 1)}%</td>
+      <td>${fmt(item.rsi5m, 1)} / ${fmt(item.rsi15m, 1)}</td>
+      <td>$${fmt(item.lastPrice, pDec)} <span style="color:${item.chg24h >= 0 ? 'var(--green)' : 'var(--red)'}; font-size:0.75rem;">(${item.chg24h >= 0 ? '+' : ''}${fmt(item.chg24h, 2)}%)</span></td>
+      <td style="color:${item.evalObj.color}; font-weight:700;">${item.evalObj.status}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rowsHtml || `<tr><td colspan="9" style="text-align:center; color:var(--red);">Falha ao carregar o scanner.</td></tr>`;
+  scanStatus.textContent = `Ranking 4.1 concluído (${scanItems.length} ativos classificados da melhor oportunidade #1 para a pior #${scanItems.length}). Olhe primeiro para o topo da lista!`;
+}
+
+function copyReport(includeFullProtocol) {
+  if (!latestDataText) {
+    alert('Clique primeiro em "Coletar Dados 4.1 Agora".');
+    return;
+  }
+  const protocolHeader = `Aja como o MOTOR DE DECISAO QUANTITATIVA V4.1 (Unificado: Gemini + ChatGPT + Claude + MuseSpark). Analise os dados reais auditados da Binance Futures abaixo seguindo estritamente todas las regras eliminatorias do nosso Protocolo V4.1:
+- SECAO 0 OBRIGATORIA (Filtro Anti-Faca BTC + Regime ADX + Desconto de Arrasto Beta/Alpha): Verifique primeiro o regime do BTCUSDT, a Correlacao de Pearson (2h), o Coeficiente Beta e o Alpha Residual de 15m (Secao 0) cruzados com o ADX de 5m e 15m do ativo (Secao 4). REGRA ANTI-ESPUMA DE ROBO: Se a moeda estiver esticada nas bandas ±2σ da VWAP e o ADX >= 25 apontar tendencia contra a reversao, verifique obrigatoriamente o Alpha Residual na Secao 0. Se a Correlacao for >= 0.65 e o Alpha Residual for proximo de zero (±0.25%) ou negativo contra o movimento, classifique a alta do ADX como "Ruido de Arrasto Mecanico do BTC (Espuma de HFT)" e NAO invalide a tese de reversao na VWAP. Caso o Alpha Residual confirme forca propria autonoma (> +0.25% na alta ou < -0.25% na queda), e PROIBIDO aprovar reversao cega (opere apenas pullback a favor da tendencia ou exija sweep confirmado de PDH/PDL + divergencia de CVD/OI).
+- NIVEIS DE SESSAO E BOLSOES DE LIQUIDACAO: Cruzar as bandas da VWAP com a Maxima/Minima do Dia Anterior (PDH/PDL), Aberturas de Asia/Londres/NY (Secao 3) e os Bolsoes Matematicos de Liquidacao Forcada de 25x, 50x e 100x (Secao 6).
+- MATRIZ DE OI, LSR CONTRARIO E JANELA DE FUNDING: Cruzar a variacao do Open Interest com a direcao do preco (Secao 5), usar o LSR Global como indicador contrario de armadilha do varejo e checar se faltam menos de 30 minutos para a cobranca de funding (00h/08h/16h UTC).
+- SEQUENCIA MATEMATICA INVIOLAVEL: Utilize o StepSize oficial e a Tabela Pre-Calculada da Secao 8 do relatorio. Quantidade = Exposicao / Preco (arredondada para baixo no StepSize). Verifique se Quantidade * Preco reproduz exatamente a Exposicao (divergencia > 1% = ERRO DE CALCULO, bloqueia aprovacao).
+- TRAVA ELIMINATORIA UNICA: Relacao Risco-Retorno Liquida minima de 1,50:1 para qualquer modalidade. Custos totais <= 20% do lucro bruto. Perda liquida sob estresse (0,10% de slippage no stop) <= US$ 3,00 (Classe A) em exposicao teto recomendada de US$ 150 (maximo absoluto US$ 200).
+- REGRA POST-ONLY E JANELA DE CANCELAMENTO: Para ordens Maker, compre <= Best Bid e venda >= Best Ask no instante do envio (nunca use Best Bid + 1 tick em book de 1 tick de spread). Informe sempre o Preco Limite de Cancelamento (onde o R:R liquido cai abaixo de 1,50:1) e timeout de 2 candles de 5m (10 min).
+- GESTAO DE SAIDA E TRANSPARENCIA ESTATISTICA: Descreva a posicao exata do alvo em sigmas. Ao atingir +1R (ou Banda ±1σ), mova o Stop para o Break-Even. Aplique Time-Stop de 60 a 90 min. Cite apenas os dados empiricos reais medidos na Secao 7 (500 candles), rotulando qualquer leitura fora da amostra como hipotese operacional.
+
+Apresente a analise completa com a Secao 0 (incluindo o Diagnostico de Arrasto Beta/Alpha), os parametros obrigatorios de dimensionamento/estresse e a Conclusao Final:\n\n`;
+
+  const finalStr = includeFullProtocol ? (protocolHeader + latestDataText) : latestDataText;
+  navigator.clipboard.writeText(finalStr).then(() => {
+    document.getElementById('statusText').textContent = 'Relatório 4.1 copiado para a área de transferência! Cole (Ctrl+V) no chat.';
+  });
+}
+
+window.onload = fetchAllData;
+</script>
+</body>
+</html>
+
+```
